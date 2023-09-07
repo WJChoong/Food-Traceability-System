@@ -17,9 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import blockchain.Block;
 import blockchain.BlockChain;
 import blockchain.Transaction;
 import util.DigitalSignature;
+import util.KeyFileManager;
 
 public class Main {
 	static Scanner scanner = new Scanner(System.in);
@@ -152,8 +154,28 @@ public class Main {
 
             // Generate key pair for digital signature
             KeyPair keyPair = DigitalSignature.generateKeyPair();
+            
+            try {
+                KeyFileManager.storeKeyPair(keyPair, userId);
+                System.out.println("Key pair stored for user: " + userId);
+            } catch (IOException e) {
+                System.out.println("Error storing key pair: " + e.getMessage());
+            }
+            
+            LocalDateTime timeIn = null;
 
-         // Get input from user for location, testResult, and certifications
+            // Get the timeOut from the latest transaction if there are transactions in the blockchain
+            if (!blockchain.isEmpty()) {
+                Block latestBlock = blockchain.getLatestBlock();
+
+                // Ensure there's at least one transaction in the latest block
+                if (!latestBlock.getTransactions().isEmpty()) {
+                    Transaction latestTransaction = latestBlock.getTransactions().get(latestBlock.getTransactions().size() - 1);
+                    timeIn = latestTransaction.getTimeOut();
+                }
+            }
+
+            // Get input from user for location, testResult, and certifications
             System.out.print("Enter location: ");
             String location = scanner.nextLine();
             System.out.print("Enter test result: ");
@@ -163,16 +185,35 @@ public class Main {
 
             // Add transactions to the blockchain with user input
             LocalDateTime now = LocalDateTime.now();
-
-            Transaction transaction = new Transaction(userLevel,
-                    location, null, now,
-                    userId, testResult, certifications
-            );
+            Transaction transaction = new Transaction(userLevel, location, timeIn, now, userId, 
+                    testResult, certifications, keyPair);
             
             // Sign the transactions
             transaction.signTransaction(keyPair.getPrivate());
+            
+            boolean signatureVerified = transaction.verifySignature(keyPair.getPublic());
 
-            blockchain.addTransaction(transaction, 1);
+            if (signatureVerified) {
+                System.out.println("Signature verified.");
+            } else {
+                System.out.println("Signature verification failed.");
+                return; // Exit method if signature verification fails
+            }
+
+            Block latestBlock = blockchain.getLatestBlock();
+            if (!latestBlock.getTransactions().isEmpty()) {
+                Transaction lastTransaction = latestBlock.getTransactions().get(latestBlock.getTransactions().size() - 1);
+                if (transaction.getLevel() <= lastTransaction.getLevel()) {
+                    // Create a new block if the userLevel of the new transaction is not greater than the last transaction
+                    Block newBlock = new Block(blockchain.getLatestBlock().getIndex(), blockchain.getLastBlockHash());
+                    newBlock.addTransaction(transaction);
+                    blockchain.addBlock(newBlock);
+                } else {
+                    latestBlock.addTransaction(transaction);
+                }
+            } else {
+                latestBlock.addTransaction(transaction);
+            }
 
             // Display the initial blockchain
             System.out.println("Initial Blockchain:");
@@ -184,6 +225,8 @@ public class Main {
             System.out.println("You don't have permission to add information.");
         }
     }
+
+
     static void viewBlockchain() {
         if (userLevel >= 1) {
             System.out.println("Viewing blockchain");
@@ -214,13 +257,5 @@ public class Main {
             e.printStackTrace();
             return null;
         }
-    }
- // Save the private key to a keystore file
-    private static void savePrivateKeyToKeystore(PrivateKey privateKey, String filename, String password) {
-        DigitalSignature.savePrivateKey(filename, privateKey, password);
-    }
-    // Load the private key from the keystore file
-    private static PrivateKey loadPrivateKeyFromKeystore(String filename, String password) {
-        return DigitalSignature.loadPrivateKey(filename, password);
     }
 }

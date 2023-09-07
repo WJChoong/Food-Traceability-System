@@ -58,40 +58,39 @@ public class BlockChain implements Serializable {
 		this.chain = chain;
 	}
 	public void addTransaction(Transaction transaction, int level) {
-	    if (chain.isEmpty() || Block.getLatestBlock(chain).getTransactions().size() >= 4) {
-	        // Create a new block and add it to the chain
-	        Block newBlock = new Block(chain.size(), getLastBlockHash());
-	        chain.add(newBlock);
-	    }
+        if (chain.isEmpty() || Block.getLatestBlock(chain).getTransactions().size() >= 4) {
+            // Create a new block and add it to the chain
+            Block newBlock = new Block(chain.size(), getLastBlockHash());
+            chain.add(newBlock);
+        }
 
-	    boolean levelExists = true;
-	    while (levelExists) {
-	        Block lastBlock = Block.getLatestBlock(chain);
-	        levelExists = false;
+        boolean levelExists = true;
+        while (levelExists) {
+            Block lastBlock = Block.getLatestBlock(chain);
+            levelExists = false;
 
-	        for (Transaction existingTransaction : lastBlock.getTransactions()) {
-	            if (existingTransaction.getLevel() == level) {
-	                levelExists = true;
-	                break;
-	            }
-	        }
+            for (Transaction existingTransaction : lastBlock.getTransactions()) {
+                if (existingTransaction.getLevel() == level) {
+                    levelExists = true;
+                    break;
+                }
+            }
 
-	        if (levelExists) {
-	            // Create a new block and add it to the chain
-	            Block newBlock = new Block(chain.size(), getLastBlockHash());
-	            chain.add(newBlock);
-	        }
-	    }
+            if (levelExists) {
+                // Create a new block and add it to the chain
+                Block newBlock = new Block(chain.size(), getLastBlockHash());
+                chain.add(newBlock);
+            }
+        }
 
-	    // Find the last block in the chain and add the transaction to it
-	    Block lastBlock = Block.getLatestBlock(chain);
+        // Find the last block in the chain and add the transaction to it
+        Block lastBlock = Block.getLatestBlock(chain);
 
-	    // Sign the transaction before adding it
-//	    transaction.signTransaction(privateKey);
+        // Sign the transaction before adding it
+        // transaction.signTransaction(privateKey);
 
-	    lastBlock.addTransaction(transaction);
-	}
-
+        lastBlock.addTransaction(transaction);
+    }
 	public String getLastBlockHash() {
         if (!chain.isEmpty()) {
             Block lastBlock = chain.get(chain.size() - 1);
@@ -110,5 +109,14 @@ public class BlockChain implements Serializable {
         }
         return null;
     }
+	 public Block getLatestBlock() {
+        if (chain.isEmpty()) {
+            return null; // Return null if the blockchain is empty
+        }
+        return chain.get(chain.size() - 1);
+    }
+	public boolean isEmpty(){
+		return chain.isEmpty();
+	}
 
 }

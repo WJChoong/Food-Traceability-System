@@ -1,18 +1,15 @@
 package util;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.security.Certificate;
-import java.security.Key;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.security.cert.CertificateFactory;
 import java.util.Base64;
 
 public class DigitalSignature {
@@ -55,30 +52,17 @@ public class DigitalSignature {
         }
     }
     
-    public static void savePrivateKey(String filePath, PrivateKey privateKey, String password) {
-        try {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(null, null);
-
-            // Instead of creating a certificate, we directly add the private key
-            keystore.setKeyEntry("privateKey", privateKey, password.toCharArray(), null);
-
-            try (FileOutputStream fos = new FileOutputStream(filePath)) {
-                keystore.store(fos, password.toCharArray());
-            }
+    public static void savePrivateKeyToFile(String filePath, PrivateKey privateKey) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            oos.writeObject(privateKey);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static PrivateKey loadPrivateKey(String filePath, String password) {
-        try {
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            FileInputStream fis = new FileInputStream(filePath);
-            keystore.load(fis, password.toCharArray());
-
-            Key key = keystore.getKey("privateKey", password.toCharArray());
-            return (PrivateKey) key;
+    public static PrivateKey loadPrivateKeyFromFile(String filePath) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+            return (PrivateKey) ois.readObject();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

@@ -1,17 +1,18 @@
 package blockchain;
 
 import java.io.Serializable;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
+import java.util.Base64;
+
+import javax.crypto.Cipher;
 
 import util.DigitalSignature;
 import util.HashUtil;
 
 public class Transaction implements Serializable {
-//	private String data;
-//    private String sender;
-//    private String receiver;
     private int level;
     private String digitalSignature;
     private String location;
@@ -20,9 +21,12 @@ public class Transaction implements Serializable {
     private String userId;
     private String testResult;
     private String certifications;
+    private KeyPair keyPair;
+	private String hashedPrivateKey;
+	private String privateKeyFilePath;
 
     public Transaction(int level, String location, LocalDateTime timeIn, LocalDateTime timeOut,
-            String userId, String testResult, String certifications) {
+            String userId, String testResult, String certifications, KeyPair keyPair) {
 		this.level = level;
 		this.location = location;
 		this.timeIn = timeIn;
@@ -30,6 +34,7 @@ public class Transaction implements Serializable {
 		this.userId = userId;
 		this.testResult = testResult;
 		this.certifications = certifications;
+		this.keyPair = keyPair;
 	}
  
     public String calculateHash() {
@@ -46,6 +51,31 @@ public class Transaction implements Serializable {
         String dataToVerify = level + location + timeIn + timeOut + userId + testResult + certifications;
         return DigitalSignature.verify(dataToVerify, digitalSignature, publicKey);
     }
+    public String encryptData(String data, PrivateKey privateKey) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+            byte[] encryptedData = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String decryptData(String encryptedData, PublicKey publicKey) {
+        try {
+            byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+            return new String(decryptedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
  // Override toString for display
     @Override
     public String toString() {
@@ -115,5 +145,36 @@ public class Transaction implements Serializable {
 	public void setCertifications(String certifications) {
 		this.certifications = certifications;
 	}
+	
+	public KeyPair getKeyPair() {
+		return keyPair;
+	}
+
+	public void setKeyPair(KeyPair keyPair) {
+		this.keyPair = keyPair;
+	}
+
+	public String getHashedPrivateKey() {
+		return hashedPrivateKey;
+	}
+
+	public void setHashedPrivateKey(String hashedPrivateKey) {
+		this.hashedPrivateKey = hashedPrivateKey;
+	}
+
+	public void generateHashedPrivateKey() {
+        if (keyPair != null) {
+            String privateKeyString = Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
+            this.hashedPrivateKey = HashUtil.sha3(privateKeyString);
+        }
+    }
+
+    public String getPrivateKeyFilePath() {
+        return privateKeyFilePath;
+    }
+
+    public void setPrivateKeyFilePath(String privateKeyFilePath) {
+        this.privateKeyFilePath = privateKeyFilePath;
+    }
     
 }

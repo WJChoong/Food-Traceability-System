@@ -1,6 +1,7 @@
 package blockchain;
 
 import java.io.Serializable;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -45,34 +46,25 @@ public class Block implements Serializable {
         return MerkleTreeBuilder.buildMerkleTree(transactionHashes);
     }
 
-
-//    // Build a Merkle tree from a list of transaction hashes
-//    private String constructMerkleTree(List<String> transactionHashes) {
-//        if (transactionHashes.isEmpty()) {
-//            return "0"; // Return a default hash for an empty tree
-//        }
-//        if (transactionHashes.size() == 1) {
-//            return transactionHashes.get(0); // Return the hash of the single transaction
-//        }
-//
-//        List<String> newLevel = new ArrayList<>();
-//        // Combine adjacent hashes and hash them together
-//        for (int i = 0; i < transactionHashes.size(); i += 2) {
-//            String leftHash = transactionHashes.get(i);
-//            String rightHash = (i + 1 < transactionHashes.size()) ? transactionHashes.get(i + 1) : leftHash;
-//            newLevel.add(HashUtil.sha3(leftHash + rightHash)); // Concatenate and hash
-//        }
-//
-//        // Recursively build the next level of the Merkle tree
-//        return constructMerkleTree(newLevel);
-//    }
-
     public void mineBlock(int difficulty) {
         String target = new String(new char[difficulty]).replace('\0', '0'); // Create a target with leading zeros
         while (!hash.substring(0, difficulty).equals(target)) {
             nonce++;
             hash = calculateHash();
         }
+        for (Transaction tx : transactions) {
+            KeyPair keyPair = DigitalSignature.generateKeyPair();
+            tx.setKeyPair(keyPair);
+            tx.generateHashedPrivateKey();
+
+            // Save private key to a file
+            String privateKeyFilePath = "private_key_" + tx.getUserId() + ".dat";
+            DigitalSignature.savePrivateKeyToFile(privateKeyFilePath, keyPair.getPrivate());
+
+            // Store the file path in the transaction data
+            tx.setPrivateKeyFilePath(privateKeyFilePath);
+        }
+
         System.out.println("Block mined: " + hash);
     } 
     public static Block getLatestBlock(List<Block> chain) {
