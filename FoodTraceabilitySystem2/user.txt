@@ -1,0 +1,4 @@
+1,Supplier,supplier,supplier123,Location1,1,Active
+2,Warehouse,warehouse,warehouse123,Location2,2,Active
+3,Transportation,transportation,transportation123,Location3,3,Active
+4,Retail,retail,retail123,Location4,4,Active
