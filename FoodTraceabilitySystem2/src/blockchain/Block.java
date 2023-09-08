@@ -18,7 +18,7 @@ public class Block implements Serializable {
     private List<Transaction> transactions;
     private String merkleRoot;
     private String hash;
-    private int nonce; // Add a nonce field for proof-of-work
+    private int nonce; 
     private String digitalSignature;
 
     public Block(int index, String previousHash) {
@@ -27,17 +27,17 @@ public class Block implements Serializable {
         this.timestamp = System.currentTimeMillis();
         this.transactions = new ArrayList<>();
         this.merkleRoot = calculateMerkleRoot();
-        this.nonce = 0; // Initialize nonce to 0
+        this.nonce = 0; 
         this.hash = calculateHash();
     }
 
     // Calculate the hash of the current block
     public String calculateHash() {
         String data = index + previousHash + timestamp + merkleRoot + nonce;
-        return HashUtil.sha3(data); // Use a suitable hash function (e.g., SHA-256)
+        return HashUtil.sha3(data);
     }
 
- // Calculate the Merkle root of the transactions using a basic concatenation approach
+    // Calculate the Merkle root of the transactions using a basic concatenation approach
     private String calculateMerkleRoot() {
         List<String> transactionHashes = new ArrayList<>();
         for (Transaction tx : transactions) {
@@ -47,7 +47,7 @@ public class Block implements Serializable {
     }
 
     public void mineBlock(int difficulty) {
-        String target = new String(new char[difficulty]).replace('\0', '0'); // Create a target with leading zeros
+        String target = new String(new char[difficulty]).replace('\0', '0');
         while (!hash.substring(0, difficulty).equals(target)) {
             nonce++;
             hash = calculateHash();
@@ -69,7 +69,7 @@ public class Block implements Serializable {
     } 
     public static Block getLatestBlock(List<Block> chain) {
         if (chain.isEmpty()) {
-            return null; // Return null if the chain is empty
+            return null; 
         }
         return chain.get(chain.size() - 1);
     }

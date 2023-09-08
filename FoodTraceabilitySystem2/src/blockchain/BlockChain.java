@@ -12,7 +12,7 @@ public class BlockChain implements Serializable {
         // Create the Genesis block (the first block in the BlockChain)
         createGenesisBlock();
     }
- // Create the Genesis block
+    // Create the Genesis block
     private void createGenesisBlock() {
         Block genesisBlock = new Block(0, "0");
         chain.add(genesisBlock);
@@ -25,7 +25,7 @@ public class BlockChain implements Serializable {
             newBlock.setPreviousHash(latestBlock.getHash());
             newBlock.setIndex(chain.size());
         } else {
-            // Handle the case when the chain is empty (e.g., for the Genesis block)
+            // Handle the case when the chain is empty
             newBlock.setPreviousHash("0");
             newBlock.setIndex(0);
         }
@@ -35,21 +35,24 @@ public class BlockChain implements Serializable {
         chain.add(newBlock);
     }
     // View the entire BlockChain
-    public void viewBlockChain() {
+    public String viewBlockChain() {
+    	String output = "";
         for (Block block : chain) {
-            System.out.println("Block #" + block.getIndex());
-            System.out.println("Previous Hash: " + block.getPreviousHash());
-            System.out.println("Timestamp: " + block.getTimestamp());
-            System.out.println("Merkle Root: " + block.getMerkleRoot());
-            System.out.println("Block Hash: " + block.getHash());
-            System.out.println("Transactions:");
+        	output += ("Block #" + block.getIndex());
+        	output += ("\nPrevious Hash: " + block.getPreviousHash());
+        	output += ("\nTimestamp: " + block.getTimestamp());
+        	output += ("\nMerkle Root: " + block.getMerkleRoot());
+        	output += ("\nBlock Hash: " + block.getHash());
+        	output += ("\nTransactions:");
 
             for (Transaction transaction : block.getTransactions()) {
-                System.out.println("  " + transaction.toString());
+            	output += ("\n" + transaction.toString());
             }
 
-            System.out.println("--------------------------------");
+            output += ("\n--------------------------------");
         }
+        System.out.println(output);
+        return output;
     }
 	public List<Block> getChain() {
 		return chain;
@@ -59,7 +62,6 @@ public class BlockChain implements Serializable {
 	}
 	public void addTransaction(Transaction transaction, int level) {
         if (chain.isEmpty() || Block.getLatestBlock(chain).getTransactions().size() >= 4) {
-            // Create a new block and add it to the chain
             Block newBlock = new Block(chain.size(), getLastBlockHash());
             chain.add(newBlock);
         }
@@ -85,9 +87,6 @@ public class BlockChain implements Serializable {
 
         // Find the last block in the chain and add the transaction to it
         Block lastBlock = Block.getLatestBlock(chain);
-
-        // Sign the transaction before adding it
-        // transaction.signTransaction(privateKey);
 
         lastBlock.addTransaction(transaction);
     }

@@ -28,7 +28,7 @@ public class DigitalSignature {
 
     public static String sign(String data, PrivateKey privateKey) {
         try {
-            Signature signature = Signature.getInstance("SHA512withRSA"); // Changed to SHA512
+            Signature signature = Signature.getInstance("SHA512withRSA"); 
             signature.initSign(privateKey);
             signature.update(data.getBytes());
             byte[] signatureBytes = signature.sign();

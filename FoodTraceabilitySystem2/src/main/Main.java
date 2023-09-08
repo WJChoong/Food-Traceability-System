@@ -113,10 +113,10 @@ public class Main {
     static void logout() {
         userLevel = 0;
         userId = null;
-        userData.clear(); // Clear user data on logout
+        userData.clear();
     }
     static void returnToLogin() {
-        userData.clear(); // Clear user data on logout
+        userData.clear();
     }
     static void displayMainMenu() {
         System.out.println("Main Menu");
@@ -152,6 +152,7 @@ public class Main {
                 blockchain = deserializeBlockchain("blockchain.bin");
             }
 
+            // No need to generate if already exist key, just read from stored file
             // Generate key pair for digital signature
             KeyPair keyPair = DigitalSignature.generateKeyPair();
             
@@ -197,7 +198,7 @@ public class Main {
                 System.out.println("Signature verified.");
             } else {
                 System.out.println("Signature verification failed.");
-                return; // Exit method if signature verification fails
+                return;
             }
 
             Block latestBlock = blockchain.getLatestBlock();
@@ -245,6 +246,12 @@ public class Main {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filename))) {
             outputStream.writeObject(blockchain);
             System.out.println("Blockchain serialized and saved to " + filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filename.replaceAll(".bin", ".txt")))) {
+            outputStream.writeObject(blockchain.viewBlockChain());
+            System.out.println("Blockchain serialized and saved to " + filename.replaceAll(".bin", ".txt"));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -25,10 +25,7 @@ public class MerkleTreeBuilder {
     }
 
     private static String hashConcatenate(String leftHash, String rightHash) {
-        // Concatenate and hash the two input hashes (e.g., SHA-256)
         String concatenatedData = leftHash + rightHash;
-        // Implement your hash function (e.g., SHA-256) here
-        // For demonstration purposes, we assume a simple concatenation
         return concatenatedData;
     }
 }
